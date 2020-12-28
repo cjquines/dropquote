@@ -1,16 +1,29 @@
 // import _ from "lodash";
 // the idea is to make it a S T A T E M A C H I N E
 
-export const setSelected = (state, setState, {r, c}) => {
+export class WordSplits {
+  constructor(grid) {
+    this.grid = grid;
+  }
+
+  wordAt(r, c) {}
+
+  nextWord(r, c) {}
+}
+
+// candidate letters
+// candidate words
+
+export const setSelected = (state, setState, { r, c }) => {
   console.log(r, c);
   setState({ selected: { r, c } });
 };
 
-export const moveBy = (state, setState, {dr, dc}) => {
-  const {r, c} = state.selected;
+export const moveBy = (state, setState, { dr, dc }) => {
+  const { r, c } = state.selected;
   console.log(r, c);
-  setSelected(state, setState, {r: r + dr, c: c + dc});
-}
+  setSelected(state, setState, { r: r + dr, c: c + dc });
+};
 
 // export default class Dropquote {
 //   constructor(state, setState) {
