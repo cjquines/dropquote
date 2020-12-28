@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { Component } from "react";
 import _ from "lodash";
+import Dropquote from "./Dropquote.js";
 import "./App.scss";
 
 const HeaderCell = ({ letters }) => {
@@ -87,17 +88,27 @@ const InputHandler = ({
       ArrowRight: "right",
       Backspace: "backspace",
       "{del}": "backspace",
-      Delete: "delete",
-      Tab: "tab",
-      " ": "space",
-      "[": "backward",
-      "]": "forward",
+      Delete: "backspace",
+      Tab: "right",
+      " ": "right",
     };
     if (key in actionKeys) {
-      // pass
+      const action = actionKeys[key];
+      let direction = { r: 0, c: 0 };
+      if (action === "backspace") {
+        return;
+      } else if (action === "up") {
+        direction = { r: 0, c: -1 };
+      } else if (action === "left") {
+        direction = { r: 1, c: 0 };
+      } else if (action === "down") {
+        direction = { r: 0, c: 1 };
+      } else if (action === "right") {
+        direction = { r: -1, c: 0 };
+      }
     } else {
       const letter = key.toUpperCase();
-      if (letter.match(/^[A-Z]$/)) {
+      if (letter.match(/^[A-Z.]$/)) {
         console.log("x");
         const newGrid = _.cloneDeep(grid);
         const { r, c } = selected;
@@ -114,46 +125,52 @@ const InputHandler = ({
   );
 };
 
-const App = () => {
-  const [selected, setSelected] = useState({ r: 0, c: 0 });
-  const [header, setHeader] = useState([
-    ["E", "O", "T", "T"],
-    ["H", "O", "T"],
-    ["A", "Q"],
-    ["B", "T", "T", "U"],
-    ["E", "E", "O"],
-    ["I", "S"],
-    ["B", "O", "S", "T"],
-    ["E", "I", "R"],
-    ["O", "T"],
-    ["H", "N", "N"],
-  ]);
-  const [grid, setGrid] = useState([
-    ["", "", ".", "", "", ".", "", "", ".", ""],
-    ["", "", ".", "", "", ".", "", "", ".", "."],
-    ["", "", "", "", ".", "", "", ".", "", ""],
-    ["", ".", "", "", "", "", "", "", "", ""],
-  ]);
-  return (
-    <div className="app">
-      <InputHandler
-        header={header}
-        grid={grid}
-        selected={selected}
-        setGrid={setGrid}
-        setSelected={setSelected}
-      >
-        <table className="allTable">
-          <Header
-            header={header}
-            selected={selected}
-            setSelected={setSelected}
-          />
-          <Grid grid={grid} selected={selected} setSelected={setSelected} />
-        </table>
-      </InputHandler>
-    </div>
-  );
-};
+export default class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      selected: { r: 0, c: 0 },
+      header: [
+        ["E", "O", "T", "T"],
+        ["H", "O", "T"],
+        ["A", "Q"],
+        ["B", "T", "T", "U"],
+        ["E", "E", "O"],
+        ["I", "S"],
+        ["B", "O", "S", "T"],
+        ["E", "I", "R"],
+        ["O", "T"],
+        ["H", "N", "N"],
+      ],
+      grid: [
+        ["", "", ".", "", "", ".", "", "", ".", ""],
+        ["", "", ".", "", "", ".", "", "", ".", "."],
+        ["", "", "", "", ".", "", "", ".", "", ""],
+        ["", ".", "", "", "", "", "", "", "", ""],
+      ],
+    };
+    this.dq = new Dropquote(this.state, this.setState.bind(this));
+  }
 
-export default App;
+  componentDidMount() {
+    this.dq.test();
+    console.log("ok");
+  }
+
+  render() {
+    return (
+      <div className="app">
+        <InputHandler
+          header={this.state.header}
+          grid={this.state.grid}
+          selected={this.state.selected}
+        >
+          <table className="allTable">
+            <Header header={this.state.header} selected={this.state.selected} />
+            <Grid grid={this.state.grid} selected={this.state.selected} />
+          </table>
+        </InputHandler>
+      </div>
+    );
+  }
+}
