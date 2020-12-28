@@ -70,35 +70,38 @@ export const gridSlice = createSlice({
     editSelectedCell: (state, action) => {
       const letter = action.payload;
       const { r, c } = state.selected;
-      if (state.editing) {
-        if (r >= 0) {
-          state.grid[r][c] = letter;
-          if (letter !== "") {
-            state.selected = nextInDir(state, r, c, 0, 1);
-          }
-        } else if (letter !== "") {
-          state.header[c].push(letter);
-        } else {
-          state.header[c].pop();
-        }
-      } else if (letter !== "") {
-        if (!state.header[c].includes(letter)) return;
-        const idx = state.header[c].findIndex((v) => v === letter);
-        if (state.grid[r][c] !== "") state.header[c].push(state.grid[r][c]);
-        state.header[c].splice(idx, 1);
-        state.grid[r][c] = letter;
-        state.selected = nextInDir(state, r, c, 0, 1);
-      } else if (state.grid[r][c] !== "") {
-        state.header[c].push(state.grid[r][c]);
-        state.grid[r][c] = letter;
-      }
+
+      if (!state.editing && letter !== "" && !state.header[c].includes(letter))
+        return;
+
+      const pushed = state.editing
+        ? r === -1 && letter !== "" && letter !== "." && letter
+        : state.grid[r][c] !== "" && state.grid[r][c];
+      const popped = state.editing
+        ? r === -1 && letter === "" && -1
+        : letter !== "" && state.header[c].findIndex((v) => v === letter);
+      const result = (!state.editing || r >= 0) && letter;
+      const move = letter !== "" && (!state.editing || r >= 0);
+
+      if (pushed !== false) state.header[c].push(pushed);
+      if (popped !== false) state.header[c].splice(popped, 1);
+      if (result !== false) state.grid[r][c] = result;
+      if (move) state.selected = nextInDir(state, r, c, 0, 1);
     },
   },
 });
 
-export const { toggleEditing, selectCell, moveBy, editSelectedCell } = gridSlice.actions;
+export const {
+  toggleEditing,
+  selectCell,
+  moveBy,
+  editSelectedCell,
+} = gridSlice.actions;
 
-export const gridDims = (state) => ({ rows: state.grid.rows, cols: state.grid.cols });
+export const gridDims = (state) => ({
+  rows: state.grid.rows,
+  cols: state.grid.cols,
+});
 export const letterAt = (state) => (r, c) =>
   r === -1 ? state.grid.header[c] : state.grid.grid[r][c];
 export const isSelected = (state) => (r, c) =>
