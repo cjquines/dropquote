@@ -1,4 +1,6 @@
 html {
+  font-size: 14px;
+  font-size: clamp(9px, 2.7vw, 22px);
   line-height: 1.15;
 }
 

@@ -1,0 +1,46 @@
+.app {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.inputHandler:focus {
+  outline: none;
+}
+
+.headerCell {
+  vertical-align: bottom;
+}
+
+.allTable {
+  border-collapse: collapse;
+  table-layout: fixed;
+
+  th, td {
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.gridCell {
+  align-items: center;
+  border: 1px solid #aaaaaa;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  height: 1.5em;
+  width: 1.5em;
+
+  .gridLetter {
+    cursor: normal;
+  }
+}
+
+.shaded {
+  background-color: #000;
+}
+
+.selected {
+  border: 3px solid red;
+}
