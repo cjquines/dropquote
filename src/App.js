@@ -180,6 +180,7 @@ export default class App extends Component {
   setSelected = (r, c) => {
     const { editing, grid } = this.state;
     if (!this.inBounds(r, c)) return;
+    if (!editing && r === -1) return;
     if (!editing && grid[r][c] === ".") return;
     this.setState({ selected: { r, c } });
   };
@@ -191,6 +192,7 @@ export default class App extends Component {
         let grid = _.cloneDeep(this.state.grid);
         grid[r][c] = letter;
         this.setState({ grid });
+        this.moveBy(0, 1);
       } else if (letter !== "") {
         let header = _.cloneDeep(this.state.header);
         header[c].push(letter);
@@ -200,14 +202,38 @@ export default class App extends Component {
         header[c].pop();
         this.setState({ header });
       }
+    } else if (letter !== "") {
+      if (!this.state.header[c].includes(letter)) return;
+      let header = _.cloneDeep(this.state.header);
+      const idx = header[c].findIndex((v) => v === letter);
+      header[c].splice(idx, 1);
+      this.setState({ header });
+
+      let grid = _.cloneDeep(this.state.grid);
+      grid[r][c] = letter;
+      this.setState({ grid });
+      this.moveBy(0, 1);
     } else {
-      return;
+      let header = _.cloneDeep(this.state.header);
+      header[c].push(this.state.grid[r][c]);
+      const idx = header[c].findIndex((v) => v === letter);
+      header[c].splice(idx, 1);
+      this.setState({ header });
+      
+      let grid = _.cloneDeep(this.state.grid);
+      grid[r][c] = letter;
+      this.setState({ grid });
+      this.moveBy(0, 1);
     }
   };
 
   render = () => {
     return (
       <div className="app">
+        <button onClick={(e) => {
+          e?.preventDefault?.();
+          this.setState({ editing: !this.state.editing });
+        }}>switch</button>
         <InputHandler
           header={this.state.header}
           grid={this.state.grid}
