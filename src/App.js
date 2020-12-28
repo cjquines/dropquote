@@ -1,11 +1,13 @@
 import React, { Component } from "react";
 import _ from "lodash";
-import Dropquote from "./Dropquote.js";
 import "./App.scss";
 
-const HeaderCell = ({ letters }) => {
+const HeaderCell = ({ letters, selected, onClick }) => {
   return (
-    <th className="headerCell">
+    <th
+      className={`headerCell ${selected ? "selected" : ""}`}
+      onClick={onClick}
+    >
       {letters.map((letter, i) => (
         <React.Fragment key={i}>
           {letter}
@@ -16,12 +18,23 @@ const HeaderCell = ({ letters }) => {
   );
 };
 
-const Header = ({ header }) => {
+const Header = ({ header, selected, setSelected }) => {
+  const isSelected = (c) => selected.r === -1 && selected.c === c;
+
   return (
     <thead className="header">
       <tr>
         {header.map((letters, i) => (
-          <HeaderCell key={i} letters={letters} />
+          <HeaderCell
+            key={i}
+            letters={letters}
+            selected={isSelected(i)}
+            onClick={(e) => {
+              e?.preventDefault?.();
+              e?.stopPropagation?.();
+              setSelected(-1, i);
+            }}
+          />
         ))}
       </tr>
     </thead>
@@ -43,11 +56,6 @@ const Grid = ({ grid, selected, setSelected }) => {
   const isShaded = (r, c) => grid[r][c] === ".";
   const isSelected = (r, c) => selected.r === r && selected.c === c;
 
-  const handleClick = (r, c) => {
-    if (isShaded(r, c) || isSelected(r, c)) return;
-    setSelected({ r, c });
-  };
-
   return (
     <tbody className="grid">
       {grid.map((row, r) => (
@@ -61,7 +69,7 @@ const Grid = ({ grid, selected, setSelected }) => {
                 onClick={(e) => {
                   e?.preventDefault?.();
                   e?.stopPropagation?.();
-                  handleClick(r, c);
+                  setSelected(r, c);
                 }}
               />
             </td>
@@ -76,11 +84,12 @@ const InputHandler = ({
   children,
   grid,
   header,
+  moveBy,
   selected,
-  setGrid,
   setSelected,
+  setSelectedCell,
 }) => {
-  const handleKeyDown = ({ key }) => {
+  const handleKeyDown = (e) => {
     const actionKeys = {
       ArrowLeft: "left",
       ArrowUp: "up",
@@ -92,29 +101,32 @@ const InputHandler = ({
       Tab: "right",
       " ": "right",
     };
+    const key = e?.key;
     if (key in actionKeys) {
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
       const action = actionKeys[key];
       let direction = { r: 0, c: 0 };
       if (action === "backspace") {
+        setSelectedCell("");
         return;
       } else if (action === "up") {
-        direction = { r: 0, c: -1 };
-      } else if (action === "left") {
-        direction = { r: 1, c: 0 };
-      } else if (action === "down") {
-        direction = { r: 0, c: 1 };
-      } else if (action === "right") {
         direction = { r: -1, c: 0 };
+      } else if (action === "left") {
+        direction = { r: 0, c: -1 };
+      } else if (action === "down") {
+        direction = { r: 1, c: 0 };
+      } else if (action === "right") {
+        direction = { r: 0, c: 1 };
       }
+      if (e?.shiftKey) direction = { r: -direction.r, c: -direction.c };
+      moveBy(direction.r, direction.c);
     } else {
       const letter = key.toUpperCase();
-      if (letter.match(/^[A-Z.]$/)) {
-        console.log("x");
-        const newGrid = _.cloneDeep(grid);
-        const { r, c } = selected;
-        newGrid[r][c] = letter;
-        setGrid(newGrid);
-      }
+      if (!letter.match(/^[A-Z.]$/)) return;
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+      setSelectedCell(letter);
     }
   };
 
@@ -126,51 +138,98 @@ const InputHandler = ({
 };
 
 export default class App extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      selected: { r: 0, c: 0 },
-      header: [
-        ["E", "O", "T", "T"],
-        ["H", "O", "T"],
-        ["A", "Q"],
-        ["B", "T", "T", "U"],
-        ["E", "E", "O"],
-        ["I", "S"],
-        ["B", "O", "S", "T"],
-        ["E", "I", "R"],
-        ["O", "T"],
-        ["H", "N", "N"],
-      ],
-      grid: [
-        ["", "", ".", "", "", ".", "", "", ".", ""],
-        ["", "", ".", "", "", ".", "", "", ".", "."],
-        ["", "", "", "", ".", "", "", ".", "", ""],
-        ["", ".", "", "", "", "", "", "", "", ""],
-      ],
-    };
-    this.dq = new Dropquote(this.state, this.setState.bind(this));
-  }
+  state = {
+    editing: true,
+    rows: 4,
+    cols: 10,
+    selected: { r: 0, c: 0 },
+    header: [
+      ["E", "O", "T", "T"],
+      ["H", "O", "T"],
+      ["A", "Q"],
+      ["B", "T", "T", "U"],
+      ["E", "E", "O"],
+      ["I", "S"],
+      ["B", "O", "S", "T"],
+      ["E", "I", "R"],
+      ["O", "T"],
+      ["H", "N", "N"],
+    ],
+    grid: [
+      ["", "", ".", "", "", ".", "", "", ".", ""],
+      ["", "", ".", "", "", ".", "", "", ".", "."],
+      ["", "", "", "", ".", "", "", ".", "", ""],
+      ["", ".", "", "", "", "", "", "", "", ""],
+    ],
+  };
 
-  componentDidMount() {
-    this.dq.test();
-    console.log("ok");
-  }
+  inBounds = (r, c) => {
+    const { rows, cols } = this.state;
+    return -1 <= r && r < rows && 0 <= c && c < cols;
+  };
 
-  render() {
+  moveBy = (dr, dc) => {
+    const { r, c } = this.state.selected;
+    const nr = r + dr,
+      nc = c + dc;
+    if (nc === -1) this.setSelected(nr - 1, this.state.cols - 1);
+    else if (nc === this.state.cols) this.setSelected(nr + 1, 0);
+    else this.setSelected(nr, nc);
+  };
+
+  setSelected = (r, c) => {
+    const { editing, grid } = this.state;
+    if (!this.inBounds(r, c)) return;
+    if (!editing && grid[r][c] === ".") return;
+    this.setState({ selected: { r, c } });
+  };
+
+  setSelectedCell = (letter) => {
+    const { r, c } = this.state.selected;
+    if (this.state.editing) {
+      if (r >= 0) {
+        let grid = _.cloneDeep(this.state.grid);
+        grid[r][c] = letter;
+        this.setState({ grid });
+      } else if (letter !== "") {
+        let header = _.cloneDeep(this.state.header);
+        header[c].push(letter);
+        this.setState({ header });
+      } else {
+        let header = _.cloneDeep(this.state.header);
+        header[c].pop();
+        this.setState({ header });
+      }
+    } else {
+      return;
+    }
+  };
+
+  render = () => {
     return (
       <div className="app">
         <InputHandler
           header={this.state.header}
           grid={this.state.grid}
+          moveBy={this.moveBy}
           selected={this.state.selected}
+          setSelected={this.setSelected}
+          setSelectedCell={this.setSelectedCell}
         >
           <table className="allTable">
-            <Header header={this.state.header} selected={this.state.selected} />
-            <Grid grid={this.state.grid} selected={this.state.selected} />
+            <Header
+              header={this.state.header}
+              selected={this.state.selected}
+              setSelected={this.setSelected}
+            />
+            <Grid
+              grid={this.state.grid}
+              selected={this.state.selected}
+              setSelected={this.setSelected}
+            />
           </table>
         </InputHandler>
       </div>
     );
-  }
+  };
 }
