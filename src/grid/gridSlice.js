@@ -111,6 +111,8 @@ export const gridSlice = createSlice({
   reducers: {
     selectCell: (state, action) => {
       const { r, c } = action.payload;
+      // no selecting in solve state for now
+      if (!state.editing) return;
       if (!inBounds(state, r, c) || !canEdit(state, r, c)) return;
       state.selected = { r, c };
     },
@@ -123,9 +125,8 @@ export const gridSlice = createSlice({
       const letter = action.payload;
       const { r, c } = state.selected;
 
-      // no selection in editing for now
-      if (state.editing) return;
-
+      // no editing in solve state for now
+      if (!state.editing) return;
       if (!state.editing && letter !== "" && !state.header[c].includes(letter))
         return;
 
@@ -144,13 +145,28 @@ export const gridSlice = createSlice({
       if (move) state.selected = nextInDir(state, r, c, 0, 1);
     },
     resizeGrid: (state, action) => {
-      console.log(action.payload);
+      const { rows: newRows, cols: newCols } = action.payload;
+      const { rows, cols } = state;
+      if (newCols < cols) {
+        state.grid.forEach((row) => row.pop());
+        state.header.pop();
+      } else if (newCols > cols) {
+        state.grid.forEach((row) => row.push(""));
+        state.header.push([]);
+      }
+      if (newRows < rows) {
+        state.grid.pop();
+      } else if (newRows > rows) {
+        state.grid.push(Array(newCols).fill(""));
+      }
+      state.rows = newRows;
+      state.cols = newCols;
     },
     selectSolution: (state, action) => {
       const index = action.payload;
       if (0 <= index && index < state.solutions.length) {
         state.solutionIndex = index;
-        loadSolution(state); 
+        loadSolution(state);
       }
     },
   },
@@ -162,7 +178,7 @@ export const gridSlice = createSlice({
       const { payload } = action;
       state.pending = false;
       state.editing = !state.editing;
-      if (payload) {
+      if (payload && payload.length > 0) {
         state.solutions = payload;
         state.solutionIndex = 0;
         loadSolution(state);

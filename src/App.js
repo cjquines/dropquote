@@ -26,7 +26,7 @@ const Toolbar = () => {
         <button
           onClick={(e) => {
             e?.preventDefault?.();
-            dispatch(resizeGrid([rows - 1, cols]));
+            dispatch(resizeGrid({ rows: rows - 1, cols }));
           }}
         >
           -
@@ -35,7 +35,7 @@ const Toolbar = () => {
         <button
           onClick={(e) => {
             e?.preventDefault?.();
-            dispatch(resizeGrid([rows + 1, cols]));
+            dispatch(resizeGrid({ rows: rows + 1, cols }));
           }}
         >
           +
@@ -43,7 +43,7 @@ const Toolbar = () => {
         <button
           onClick={(e) => {
             e?.preventDefault?.();
-            dispatch(resizeGrid([rows, cols - 1]));
+            dispatch(resizeGrid({ rows, cols: cols - 1 }));
           }}
         >
           -
@@ -52,7 +52,7 @@ const Toolbar = () => {
         <button
           onClick={(e) => {
             e?.preventDefault?.();
-            dispatch(resizeGrid([rows, cols + 1]));
+            dispatch(resizeGrid({ rows, cols: cols + 1 }));
           }}
         >
           +
