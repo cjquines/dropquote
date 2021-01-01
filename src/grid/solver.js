@@ -1,14 +1,27 @@
-import englishWords from "an-array-of-english-words";
+// import englishWords from "an-array-of-english-words";
 import _ from "lodash";
 import { decode } from "@msgpack/msgpack";
 import { moveInDir, inBounds } from "./gridSlice";
 const dlx = require("dancing-links");
+
+const THRESHOLD = 600;
 
 class WordFreq {
   async download() {
     const data = await fetch("./en.msgpack");
     const buffer = await data.arrayBuffer();
     this.cb = decode(buffer);
+  }
+
+  filter(regex) {
+    let res = [];
+    for (let i = 1; i < Math.min(THRESHOLD, this.cb.length); i++) {
+      for (let j = 0; j < this.cb[i].length; j++) {
+        const word = this.cb[i][j];
+        if (regex.test(word)) res.push(word);
+      }
+    }
+    return res;
   }
 
   judge(word) {
@@ -60,24 +73,24 @@ const getLetters = (header, cols, word) => {
   );
 };
 
-const getWords = (header, cols) => {
+const getWords = (wordfreq, header, cols) => {
   const expr = cols
     .map((c) => header[c].map((a) => a[0].toLowerCase()).join(""))
     .map((s) => `[${s}]`)
     .join("");
   const regex = RegExp(`^${expr}$`);
-  return englishWords.filter((s) => regex.test(s));
+  return wordfreq.filter(regex);
 };
 
 const onesAt = (length, ones) =>
   _.range(length).map((i) => (ones.includes(i) ? 1 : 0));
 
-const getConstraints = (header, grid) => {
+const getConstraints = (wordfreq, header, grid) => {
   const nLetters = header.slice(-1)[0].slice(-1)[0][1] + 1;
   const nWords = grid.length;
   return _.flattenDeep(
     grid.map((cols, c) =>
-      getWords(header, cols).map((word) =>
+      getWords(wordfreq, header, cols).map((word) =>
         getLetters(header, cols, word).map((ls) => ({
           data: word,
           primaryRow: onesAt(nLetters, ls),
@@ -106,9 +119,11 @@ const processSolution = (solution) =>
 export const solve = async (state) => {
   const head = idHeader(state);
   const grid = idGrid(state);
-  const constraints = getConstraints(head, grid);
   const wordfreq = new WordFreq();
   await wordfreq.download();
+  console.log("getting constraints...");
+  const constraints = getConstraints(wordfreq, head, grid);
+  console.log(constraints.length);
   return _.chain(dlx.findAll(constraints))
     .map(processSolution)
     .uniqWith(_.isEqual)
