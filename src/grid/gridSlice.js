@@ -1,5 +1,5 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { test } from "./solver";
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { solve } from "./solver";
 
 export const inBounds = (state, r, c) => {
   const { rows, cols } = state;
@@ -48,6 +48,18 @@ const cellsInWord = (state, wordR, wordC) => {
   return res;
 };
 
+export const toggleEditing = createAsyncThunk(
+  "grid/toggleEditing",
+  async (arg, { getState }) => {
+    const state = getState();
+    if (state.grid.editing) {
+      return await solve(state.grid);
+    } else {
+      return false;
+    }
+  }
+);
+
 export const gridSlice = createSlice({
   name: "grid",
   initialState: {
@@ -73,12 +85,9 @@ export const gridSlice = createSlice({
       ["", "", "", "", ".", "", "", ".", "", ""],
       ["", ".", "", "", "", "", "", "", "", ""],
     ],
+    solution: [],
   },
   reducers: {
-    toggleEditing: (state, action) => {
-      state.editing = !state.editing;
-      test(state);
-    },
     selectCell: (state, action) => {
       const { r, c } = action.payload;
       if (!inBounds(state, r, c) || !canEdit(state, r, c)) return;
@@ -111,10 +120,19 @@ export const gridSlice = createSlice({
       if (move) state.selected = nextInDir(state, r, c, 0, 1);
     },
   },
+  extraReducers: {
+    [toggleEditing.pending]: (state, action) => {
+      // pass
+    },
+    [toggleEditing.fulfilled]: (state, action) => {
+      const { payload } = action;
+      state.editing = !state.editing;
+      console.log(payload);
+    },
+  },
 });
 
 export const {
-  toggleEditing,
   selectCell,
   moveBy,
   editSelectedCell,

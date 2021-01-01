@@ -1,7 +1,25 @@
 import englishWords from "an-array-of-english-words";
 import _ from "lodash";
+import { decode } from "@msgpack/msgpack";
 import { moveInDir, inBounds } from "./gridSlice";
 const dlx = require("dancing-links");
+
+class WordFreq {
+  async download() {
+    const data = await fetch("./en.msgpack");
+    const buffer = await data.arrayBuffer();
+    this.cb = decode(buffer);
+  }
+
+  judge(word) {
+    for (let i = 1; i < this.cb.length; i++) {
+      if (_.sortedIndexOf(this.cb[i], word) !== -1) {
+        return Math.pow(10, -i / 100);
+      }
+    }
+    return 0;
+  }
+}
 
 const idHeader = (state) => {
   let start = 0;
@@ -70,9 +88,32 @@ const getConstraints = (header, grid) => {
   );
 };
 
-export const test = (state) => {
+const judgeSolution = (wordfreq, solution) => {
+  const freqs = solution.map((word) => wordfreq.judge(word));
+  if (freqs.some((f) => f === 0)) return 0;
+  return {
+    frequency: Math.log(1 / _.sum(freqs.map((f) => 1 / f))) / Math.log(10) + 9,
+    solution: solution,
+  };
+};
+
+const processSolution = (solution) =>
+  _.chain(solution)
+    .sortBy(["index"])
+    .map((word) => word.data)
+    .value();
+
+export const solve = async (state) => {
   const head = idHeader(state);
   const grid = idGrid(state);
   const constraints = getConstraints(head, grid);
-  console.log(dlx.findAll(constraints));
+  const wordfreq = new WordFreq();
+  await wordfreq.download();
+  return _.chain(dlx.findAll(constraints))
+    .map(processSolution)
+    .uniqWith(_.isEqual)
+    .map((s) => judgeSolution(wordfreq, s))
+    .sortBy(["frequency"])
+    .reverse()
+    .value();
 };
