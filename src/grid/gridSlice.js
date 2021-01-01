@@ -48,15 +48,25 @@ const cellsInWord = (state, wordR, wordC) => {
   return res;
 };
 
+const loadSolution = (state) => {
+  let letters = state.solutions[state.solutionIndex].solution
+    .map((word) => Array.from(word))
+    .flat()
+    .reverse();
+  let r = 0;
+  let c = 0;
+  while (r < state.rows) {
+    if (state.grid[r][c] !== ".")
+      state.grid[r][c] = letters.pop().toUpperCase();
+    [r, c] = moveInDir(state, r, c, 0, 1);
+  }
+};
+
 export const toggleEditing = createAsyncThunk(
   "grid/toggleEditing",
   async (arg, { getState }) => {
-    const state = getState();
-    if (state.grid.editing) {
-      return await solve(state.grid);
-    } else {
-      return false;
-    }
+    const { grid } = getState();
+    return grid.editing && (await solve(grid));
   }
 );
 
@@ -64,6 +74,7 @@ export const gridSlice = createSlice({
   name: "grid",
   initialState: {
     editing: true,
+    pending: false,
     rows: 4,
     cols: 10,
     selected: { r: 0, c: 0 },
@@ -85,7 +96,8 @@ export const gridSlice = createSlice({
       ["", "", "", "", ".", "", "", ".", "", ""],
       ["", ".", "", "", "", "", "", "", "", ""],
     ],
-    solution: [],
+    solutions: [],
+    solutionIndex: 0,
   },
   reducers: {
     selectCell: (state, action) => {
@@ -101,6 +113,9 @@ export const gridSlice = createSlice({
     editSelectedCell: (state, action) => {
       const letter = action.payload;
       const { r, c } = state.selected;
+
+      // no selection in editing for now
+      if (state.editing) return;
 
       if (!state.editing && letter !== "" && !state.header[c].includes(letter))
         return;
@@ -122,21 +137,22 @@ export const gridSlice = createSlice({
   },
   extraReducers: {
     [toggleEditing.pending]: (state, action) => {
-      // pass
+      state.pending = true;
     },
     [toggleEditing.fulfilled]: (state, action) => {
       const { payload } = action;
+      state.pending = false;
       state.editing = !state.editing;
-      console.log(payload);
+      if (payload) {
+        state.solutions = payload;
+        state.solutionIndex = 0;
+        loadSolution(state);
+      }
     },
   },
 });
 
-export const {
-  selectCell,
-  moveBy,
-  editSelectedCell,
-} = gridSlice.actions;
+export const { selectCell, moveBy, editSelectedCell } = gridSlice.actions;
 
 export const gridDims = ({ grid }) => ({
   rows: grid.rows,
@@ -144,8 +160,9 @@ export const gridDims = ({ grid }) => ({
 });
 export const letterAt = ({ grid }) => (r, c) =>
   r === -1 ? grid.header[c] : grid.grid[r][c];
+// no selection in editing for now
 export const isSelected = ({ grid }) => (r, c) =>
-  grid.selected.r === r && grid.selected.c === c;
+  grid.editing && grid.selected.r === r && grid.selected.c === c;
 export const isShaded = ({ grid }) => (r, c) => grid.grid[r][c] === ".";
 export const isHighlighted = ({ grid }) => (rr, cc) => {
   const { r: selR, c: selC } = grid.selected;

@@ -9,7 +9,6 @@ import {
   letterAt,
   isSelected,
   isShaded,
-  isHighlighted,
 } from "./gridSlice";
 
 const HeaderCell = ({ c, onClick }) => {
@@ -57,7 +56,7 @@ const GridCell = ({ r, c, onClick }) => {
   let className = "gridCell";
   if (useSelector(isShaded)(r, c)) className += " shaded";
   if (useSelector(isSelected)(r, c)) className += " selected";
-  if (useSelector(isHighlighted)(r, c)) className += " highlighted";
+  // no highlighted cells for now
   return (
     <div className={className} onClick={onClick}>
       <div className="gridLetter">{letter}</div>

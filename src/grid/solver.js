@@ -92,7 +92,7 @@ const judgeSolution = (wordfreq, solution) => {
   const freqs = solution.map((word) => wordfreq.judge(word));
   if (freqs.some((f) => f === 0)) return 0;
   return {
-    frequency: Math.log(1 / _.sum(freqs.map((f) => 1 / f))) / Math.log(10) + 9,
+    score: Math.log(1 / _.sum(freqs.map((f) => 1 / f))) / Math.log(10) + 9,
     solution: solution,
   };
 };
@@ -113,7 +113,7 @@ export const solve = async (state) => {
     .map(processSolution)
     .uniqWith(_.isEqual)
     .map((s) => judgeSolution(wordfreq, s))
-    .sortBy(["frequency"])
+    .sortBy(["score"])
     .reverse()
     .value();
 };
