@@ -62,6 +62,15 @@ const loadSolution = (state) => {
   }
 };
 
+const clearGrid = (state) => {
+  let r = 0;
+  let c = 0;
+  while (r < state.rows) {
+    if (state.grid[r][c] !== ".") state.grid[r][c] = "";
+    [r, c] = moveInDir(state, r, c, 0, 1);
+  }
+};
+
 export const toggleEditing = createAsyncThunk(
   "grid/toggleEditing",
   async (arg, { getState }) => {
@@ -134,6 +143,16 @@ export const gridSlice = createSlice({
       if (result !== false) state.grid[r][c] = result;
       if (move) state.selected = nextInDir(state, r, c, 0, 1);
     },
+    resizeGrid: (state, action) => {
+      console.log(action.payload);
+    },
+    selectSolution: (state, action) => {
+      const index = action.payload;
+      if (0 <= index && index < state.solutions.length) {
+        state.solutionIndex = index;
+        loadSolution(state); 
+      }
+    },
   },
   extraReducers: {
     [toggleEditing.pending]: (state, action) => {
@@ -147,12 +166,20 @@ export const gridSlice = createSlice({
         state.solutions = payload;
         state.solutionIndex = 0;
         loadSolution(state);
+      } else {
+        clearGrid(state);
       }
     },
   },
 });
 
-export const { selectCell, moveBy, editSelectedCell } = gridSlice.actions;
+export const {
+  selectCell,
+  moveBy,
+  editSelectedCell,
+  resizeGrid,
+  selectSolution,
+} = gridSlice.actions;
 
 export const gridDims = ({ grid }) => ({
   rows: grid.rows,
