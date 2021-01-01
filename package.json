@@ -5,6 +5,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^1.5.0",
     "an-array-of-english-words": "^2.0.0",
+    "dancing-links": "^2.1.1",
     "lodash": "^4.17.20",
     "node-sass": "^4.14.1",
     "react": "^17.0.1",

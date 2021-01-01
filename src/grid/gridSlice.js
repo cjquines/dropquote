@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
-import englishWords from "an-array-of-english-words";
+import { test } from "./solver";
 
-const inBounds = (state, r, c) => {
+export const inBounds = (state, r, c) => {
   const { rows, cols } = state;
   return -1 <= r && r < rows && 0 <= c && c < cols;
 };
@@ -9,7 +9,7 @@ const inBounds = (state, r, c) => {
 const canEdit = (state, r, c) =>
   state.editing || (r !== -1 && state.grid[r][c] !== ".");
 
-const moveInDir = (state, oldR, oldC, dr, dc) => {
+export const moveInDir = (state, oldR, oldC, dr, dc) => {
   let r = oldR + dr;
   let c = oldC + dc;
   if (c === -1) {
@@ -48,9 +48,6 @@ const cellsInWord = (state, wordR, wordC) => {
   return res;
 };
 
-const headerRegex = (state, c) =>
-  "[" + state.header[c].map((s) => s.toLowerCase()).join("") + "]";
-
 export const gridSlice = createSlice({
   name: "grid",
   initialState: {
@@ -80,6 +77,7 @@ export const gridSlice = createSlice({
   reducers: {
     toggleEditing: (state, action) => {
       state.editing = !state.editing;
+      test(state);
     },
     selectCell: (state, action) => {
       const { r, c } = action.payload;
@@ -122,34 +120,23 @@ export const {
   editSelectedCell,
 } = gridSlice.actions;
 
-export const gridDims = (state) => ({
-  rows: state.grid.rows,
-  cols: state.grid.cols,
+export const gridDims = ({ grid }) => ({
+  rows: grid.rows,
+  cols: grid.cols,
 });
-export const letterAt = (state) => (r, c) =>
-  r === -1 ? state.grid.header[c] : state.grid.grid[r][c];
-export const isSelected = (state) => (r, c) =>
-  state.grid.selected.r === r && state.grid.selected.c === c;
-export const isShaded = (state) => (r, c) => state.grid.grid[r][c] === ".";
-export const isHighlighted = (state) => (rr, cc) => {
-  const { r: selR, c: selC } = state.grid.selected;
+export const letterAt = ({ grid }) => (r, c) =>
+  r === -1 ? grid.header[c] : grid.grid[r][c];
+export const isSelected = ({ grid }) => (r, c) =>
+  grid.selected.r === r && grid.selected.c === c;
+export const isShaded = ({ grid }) => (r, c) => grid.grid[r][c] === ".";
+export const isHighlighted = ({ grid }) => (rr, cc) => {
+  const { r: selR, c: selC } = grid.selected;
   return (
-    !state.grid.editing &&
+    !grid.editing &&
     Boolean(
-      cellsInWord(state.grid, selR, selC).find(([r, c]) => r === rr && c === cc)
+      cellsInWord(grid, selR, selC).find(([r, c]) => r === rr && c === cc)
     )
   );
-};
-export const wordPossibilities = (state) => {
-  const expr = cellsInWord(
-    state.grid,
-    state.grid.selected.r,
-    state.grid.selected.c
-  )
-    .map(([r, c]) => headerRegex(state.grid, c))
-    .join("");
-  const regex = RegExp(`^${expr}$`);
-  return !state.grid.editing && englishWords.filter((s) => regex.test(s));
 };
 
 export default gridSlice.reducer;

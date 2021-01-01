@@ -1,8 +1,13 @@
 .app {
   align-items: center;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   min-height: 100vh;
+}
+
+.app > * {
+  margin: 1em 0;
 }
 
 .inputHandler:focus {
