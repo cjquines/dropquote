@@ -65,7 +65,9 @@ const idGrid = (state) => {
 
 const getLetters = (header, cols, word) => {
   const prod = (arr) =>
-    arr.reduce((a, b) => a.flatMap((d) => b.map((e) => [d, e].flat())));
+    arr.length === 1
+      ? arr
+      : arr.reduce((a, b) => a.flatMap((d) => b.map((e) => [d, e].flat())));
   return prod(
     _.zip(cols, Array.from(word))
       .map(([c, s]) => header[c].filter((a) => a[0].toLowerCase() === s))
@@ -124,7 +126,9 @@ export const solve = async (state) => {
   console.log("getting constraints...");
   const constraints = getConstraints(wordfreq, head, grid);
   console.log(constraints.length);
-  return _.chain(dlx.findAll(constraints))
+  const result = dlx.find(constraints, 20);
+  console.log("results", result.length);
+  return _.chain(result)
     .map(processSolution)
     .uniqWith(_.isEqual)
     .map((s) => judgeSolution(wordfreq, s))
