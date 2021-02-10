@@ -27,6 +27,7 @@ const Toolbar = () => {
   if (isEditing) {
     return (
       <div className="toolbar">
+        <p>type . to make black squares</p>
         <button
           onClick={(e) => {
             e?.preventDefault?.();
