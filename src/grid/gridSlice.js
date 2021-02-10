@@ -169,6 +169,12 @@ export const gridSlice = createSlice({
         loadSolution(state);
       }
     },
+    clearAll: (state, action) => {
+      state.header = Array.from(Array(state.cols), () => []);
+      state.grid = Array.from(Array(state.rows), () =>
+        Array(state.cols).fill("")
+      );
+    },
   },
   extraReducers: {
     [toggleEditing.pending]: (state, action) => {
@@ -195,6 +201,7 @@ export const {
   editSelectedCell,
   resizeGrid,
   selectSolution,
+  clearAll,
 } = gridSlice.actions;
 
 export const gridDims = ({ grid }) => ({

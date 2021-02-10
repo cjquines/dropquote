@@ -6,6 +6,7 @@ import {
   toggleEditing,
   resizeGrid,
   selectSolution,
+  clearAll,
 } from "./grid/gridSlice";
 import "./App.scss";
 
@@ -64,6 +65,14 @@ const Toolbar = () => {
           }}
         >
           solve
+        </button>
+        <button
+          onClick={(e) => {
+            e?.preventDefault?.();
+            dispatch(clearAll());
+          }}
+        >
+          clear all
         </button>
       </div>
     );
