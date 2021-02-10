@@ -12,11 +12,14 @@ import "./App.scss";
 
 const Toolbar = () => {
   const dispatch = useDispatch();
-  const { isEditing, isPending, solutionIndex } = useSelector(({ grid }) => ({
-    isEditing: grid.editing,
-    isPending: grid.pending,
-    solutionIndex: grid.solutionIndex,
-  }));
+  const { isEditing, isPending, solutionIndex, nSolutions } = useSelector(
+    ({ grid }) => ({
+      isEditing: grid.editing,
+      isPending: grid.pending,
+      solutionIndex: grid.solutionIndex,
+      nSolutions: grid.solutions.length,
+    })
+  );
   const { rows, cols } = useSelector(gridDims);
 
   if (isPending) return <div className="toolbar">solving...</div>;
@@ -88,7 +91,7 @@ const Toolbar = () => {
       >
         -
       </button>
-      {` solution ${solutionIndex} `}
+      {` solution ${solutionIndex + 1} of ${nSolutions} `}
       <button
         onClick={(e) => {
           e?.preventDefault?.();

@@ -137,12 +137,13 @@ export const gridSlice = createSlice({
         ? r === -1 && letter === "" && -1
         : letter !== "" && state.header[c].findIndex((v) => v === letter);
       const result = (!state.editing || r >= 0) && letter;
-      const move = letter !== "" && (!state.editing || r >= 0);
+      // no moving for now
+      // const move = letter !== "" && (!state.editing || r >= 0);
 
       if (pushed !== false) state.header[c].push(pushed);
       if (popped !== false) state.header[c].splice(popped, 1);
       if (result !== false) state.grid[r][c] = result;
-      if (move) state.selected = nextInDir(state, r, c, 0, 1);
+      // if (move) state.selected = nextInDir(state, r, c, 0, 1);
     },
     resizeGrid: (state, action) => {
       const { rows: newRows, cols: newCols } = action.payload;
