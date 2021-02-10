@@ -88,7 +88,7 @@ const onesAt = (length, ones) =>
   _.range(length).map((i) => (ones.includes(i) ? 1 : 0));
 
 const getConstraints = (wordfreq, header, grid) => {
-  const nLetters = header.slice(-1)[0].slice(-1)[0][1] + 1;
+  const nLetters = header.flat().slice(-1)[0][1] + 1;
   const nWords = grid.length;
   return _.flattenDeep(
     grid.map((cols, c) =>
@@ -123,11 +123,8 @@ export const solve = async (state) => {
   const grid = idGrid(state);
   const wordfreq = new WordFreq();
   await wordfreq.download();
-  console.log("getting constraints...");
   const constraints = getConstraints(wordfreq, head, grid);
-  console.log(constraints.length);
   const result = dlx.find(constraints, 20);
-  console.log("results", result.length);
   return _.chain(result)
     .map(processSolution)
     .uniqWith(_.isEqual)
