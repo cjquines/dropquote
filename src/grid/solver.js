@@ -1,4 +1,3 @@
-// import englishWords from "an-array-of-english-words";
 import _ from "lodash";
 import { decode } from "@msgpack/msgpack";
 import { moveInDir, inBounds } from "./gridSlice";
