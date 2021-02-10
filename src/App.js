@@ -27,7 +27,7 @@ const Toolbar = () => {
   if (isEditing) {
     return (
       <div className="toolbar">
-        <p>type . to make black squares</p>
+        <p>type . to make black squares, source on <a href="https://github.com/cjquines/dropquote">github</a></p>
         <button
           onClick={(e) => {
             e?.preventDefault?.();
