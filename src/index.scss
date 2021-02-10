@@ -1,4 +1,8 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap");
+
 html {
+  color: #212121;
+  font-family: "Lato", sans-serif;
   font-size: 14px;
   font-size: clamp(9px, 2.7vw, 22px);
   line-height: 1.15;
@@ -6,4 +10,23 @@ html {
 
 body {
   margin: 0;
+}
+
+button {
+  background-color: #b71c1c;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  margin: 0 0.25em;
+  padding: 0.25em 0.5em;
+  text-align: center;
+  text-decoration: none;
+  transition: 0.3s background-color;
+  vertical-align: middle;
+}
+
+button:hover {
+  background-color: #e57373;
+  transition: 0.3s background-color;
 }

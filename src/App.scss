@@ -15,6 +15,7 @@
 }
 
 .headerCell {
+  height: 1em;
   vertical-align: bottom;
 }
 
@@ -30,7 +31,7 @@
 
 .gridCell {
   align-items: center;
-  border: 1px solid #aaaaaa;
+  border: 1px solid #bdbdbd;
   box-sizing: border-box;
   display: flex;
   justify-content: center;
@@ -43,9 +44,9 @@
 }
 
 .shaded {
-  background-color: #000;
+  background-color: #212121;
 }
 
 .selected {
-  border: 3px solid red;
+  border: 3px solid #d32f2f;
 }
